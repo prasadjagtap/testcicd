@@ -1,11 +1,11 @@
-# Use a base image with OpenJDK
-FROM openjdk:11-jre-slim
+# Use the official Python image from Docker Hub
+FROM python:3.11-slim
 
-# Set the working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy the compiled Java program into the container
-COPY HelloWorld.class HelloWorld.class
+# Copy the Python script into the container
+COPY app.py .
 
 # Command to run the application
-CMD ["java", "HelloWorld"]
+CMD ["python", "app.py"]
