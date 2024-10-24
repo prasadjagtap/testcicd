@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_CREDENTIALS = 'dockerhubpwd'  // Your Docker Hub credentials ID
+        KUBE_CONFIG = credentials('kube-token')  // Your Kubernetes config token ID
+        IMAGE_NAME = 'prasadj1999/nginx-example'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/prasadjagtap/testcicd.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh 'docker build -t ${IMAGE_NAME} .'
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                        sh 'docker push ${IMAGE_NAME}'
+                    }
+                }
+            }
+        }
+
+       stage('Deploying App to Kubernetes') {
+        steps {
+            script {
+            kubernetesDeploy(configs: "nginx-deployment.yaml", kubeconfigId: "kubernetes")
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
+}
