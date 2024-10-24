@@ -1,14 +1,18 @@
-# Use the official Python image from the Docker Hub
-FROM python:3.9-slim
+# Use an official Node.js image
+FROM node:14
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
+# Copy package.json and install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy the rest of the application
 COPY . .
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Expose the port
+EXPOSE 3000
 
 # Command to run the application
-CMD ["python", "app.py"]
+CMD ["npm", "start"]
